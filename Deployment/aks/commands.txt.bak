@@ -1,0 +1,35 @@
+kubectl config get-contexts 
+
+
+docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d 
+docker-compose -f docker-compose.yml -f docker-compose.override.yml down
+
+az group create --name myResourceGroup --location westeurope 
+az acr create --resource-group bats_test --name batsacr --sku Basic
+az acr update -n batsacr --admin-enabled true
+az acr login --name batsacr 
+
+az acr list --resource-group bats_test --query "[].{acrLoginServer:loginServer}" --output table
+docker tag shoppingapi:latest batsacr.azurecr.io/shoppingapi:v1
+docker push batsacr.azurecr.io/shoppingapi:v1
+
+docker tag shoppingclient:latest batsacr.azurecr.io/shoppingclinet:v1
+docker push batsacr.azurecr.io/shoppingclinet:v1
+
+az acr repository list --name batsacr --output table 
+az acr repository show-tags --name batsacr --repositorty shoppingclient --output table 
+
+az aks create --resource-group bats_test --name batsAKSCluster --node-count 1 --generate-ssh-keys --attach-acr batsacr
+az aks install-cli 
+az aks get-credentials --resource-group bats_test --name batsAKSCluster 
+
+kubectl get all 
+kubectl get nodes 
+az acr list --resource-group bats_test --query "[].{acrLoginServer:loginServer}" --output table 
+
+kubectl create secret docker-registry acr-secret --docker-server=batsacr.azurecr.io --docker-username=batsacr --docker-password=lPhMb5odF0YGqiPVOIfY6G6aU3DkXvsMd+Zh9Fvd1i+ACRByfx5F --docker-email=ky.tranthe@vn.bosch.com 
+kubectl get secret 
+
+kubectl apply -f .\aks\
+kubectl get all 
+kubectl get svc 
