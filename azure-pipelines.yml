@@ -38,10 +38,12 @@ stages:
         buildContext: '$(Build.SourcesDirectory)/Shopping'
         tags: |
           $(tag)
-          latest
-          
-    - upload: manifests
-      artifact: manifests 
+          latest          
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/Deployment/manifests'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
 
 - stage: Deploy
   displayName: Deploy to Dev
