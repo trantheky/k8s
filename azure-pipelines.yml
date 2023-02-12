@@ -72,7 +72,7 @@ stages:
             action: 'deploy'
             kubernetesServiceConnection: 'K8SKubernetes'
             namespace: 'default'
-            imagePullSecrets: '$(acrSecret)'
+            imagePullSecrets: '$(imagePullSecret)'
             containers: $(containerRegistry)/$(imageRepository):$(tag)
             manifests:
               $(Pipeline.Workspace)/manifests/mongo-configmap.yaml
