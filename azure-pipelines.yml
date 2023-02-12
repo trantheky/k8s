@@ -39,6 +39,7 @@ stages:
         tags: |
           $(tag)
           latest
+          
     - upload: manifests
       artifact: manifests 
 
