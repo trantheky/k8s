@@ -1,0 +1,80 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  #Container Registry 
+  dockerRegistryServiceConnection: '....'
+  imageRepository: 'ShoppingApi'
+  containerRegistry: 'batsacr.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Shopping/Shopping.Api/Dockerfile'
+  tag: '$(Build.BuildId)'
+  imagePullSecret: 'k8sbatsacrAuth'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'batsacr'
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath)'
+        buildContext: '$(Build.SourcesDirectory)/Shopping/'
+        tags: |
+          $(tag)
+          latest
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/Deployment/aks'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+
+- stage: Deploy
+  displayName: Deploy to Dev
+  dependsOn: Build  
+  jobs:
+    - job: Deploy
+      displayName: Deploy to AKS
+      pool: 
+        vmImage: $(vmImageName)
+      steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            buildType: 'current'
+            artifactName: 'manifests'
+            targetPath: '$(Pipeline.Workspace)/Deployment/aks'
+        - task: KubernetesManifest@0
+          inputs:
+            action: 'createSecret'
+            kubernetesServiceConnection: 'K8SKubernetes'
+            namespace: 'default'
+            secretType: 'dockerRegistry'
+            secretName: '$(imagePullSecret)'
+            dockerRegistryEndpoint: 'K8SAzureContainerRegistry'
+        - task: KubernetesManifest@0
+          inputs:
+            action: 'deploy'
+            kubernetesServiceConnection: 'K8SKubernetes'
+            namespace: 'default'
+            imagePullSecrets: '$(acrSecret)'
+            containers: $(containerRegistry)/$(imageRepository):$(tag)
+            manifests:
+              $(Pipeline.Workspace)/Deployment/aks/deployment.yml
+              $(Pipeline.Workspace)/Deployment/aks/service.yml 
+            
