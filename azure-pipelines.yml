@@ -15,7 +15,7 @@ variables:
   containerRegistry: 'batsacr.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Shopping/Shopping.Api/Dockerfile'
   tag: '$(Build.BuildId)'
-  imagePullSecret: 'k8sbatsacrAuth'
+  imagePullSecret: 'bats-acr-pullimage-secret'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
