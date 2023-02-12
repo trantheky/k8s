@@ -1,7 +1,14 @@
+http://cloudhacks.blog/2020/11/creating-kubernetes-service-accounts-and-azure-devops-service-connection/
+https://dev.to/rizwankh_24/how-to-use-service-accounts-for-kubernetes-imagepullsecrets-3b57
+https://stackoverflow.com/questions/72256006/service-account-secret-is-not-listed-how-to-fix-it
+
+
 #CREATION OF SECRET
 kubectl create secret docker-registry myregistrykey --docker-server=DOCKER_REGISTRY_SERVER --docker-username=DOCKER_USER --docker-password=DOCKER_PASSWORD --docker-email=DOCKER_EMAIL
 
-#CREATION OF SERVICE ACCOUNT
+#CREATION SERVICE ACCOUNT 
+kubectl create serviceaccount bats-serviceaccount -n default
+
     apiVersion: v1
     kind: ServiceAccount
     metadata:
@@ -9,12 +16,22 @@ kubectl create secret docker-registry myregistrykey --docker-server=DOCKER_REGIS
         imagePullSecrets:
             - name: acr-secret
 
-#CREATION OF ROLEBINDING
-
-kind: RoleBinding
+#CREATE ROLE 
 apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
 metadata:
-  name: bats-rolebinding
+  name: bats-service-role
+  namespace: default
+rules:
+- apiGroups: ["*","apps","extensions"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+#CREATION OF ROLEBINDING
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bats-service-role-rolebinding
   namespace: default
 subjects:
 - kind: ServiceAccount
@@ -22,11 +39,10 @@ subjects:
   namespace: default
 roleRef:
   kind: Role
-  name: create-deployments
+  name: bats-service-role
   apiGroup: rbac.authorization.k8s.io
 
 #CREATE SECRET FOR SERVICE ACCOUNT 
-
 apiVersion: v1
 kind: Secret
 metadata:
@@ -37,7 +53,17 @@ type: kubernetes.io/service-account-token
 data:
   # You can include additional key value pairs as you do with Opaque Secrets
   extra: YmFyCg==
+  
+------
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: bats-acr-secret
+  annotations:
+    kubernetes.io/service-account.name: "bats-serviceaccount"
 
+https://developercommunity.visualstudio.com/t/MS-DevOps-Environment--Cannot-Add-Resou/10154315
 -------------------------------------------------------------------------------------------------------
 
 kubectl config get-contexts 
@@ -86,3 +112,4 @@ kubectl get pod
 kubectl scale --replicas=3 shoppingclient-deployment
 
 
+failed to create secret secrets is forbidden: User "system:serviceaccount:default:bats-serviceaccount" cannot create resource "secrets" in API group "" in the namespace "default": RBAC: [role.rbac.authorization.k8s.io "cluster-admin" not found, role.rbac.authorization.k8s.io "create-deployments" not found]
