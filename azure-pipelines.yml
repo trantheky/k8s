@@ -39,11 +39,8 @@ stages:
         tags: |
           $(tag)
           latest
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: '$(Pipeline.Workspace)/manifests'
-        artifact: 'manifests'
-        publishLocation: 'pipeline'
+    - upload: manifests
+      artifact: manifests 
 
 - stage: Deploy
   displayName: Deploy to Dev
@@ -53,12 +50,7 @@ stages:
       displayName: Deploy to AKS
       pool: 
         vmImage: $(vmImageName)
-      steps:
-        - task: DownloadPipelineArtifact@2
-          inputs:
-            buildType: 'current'
-            artifactName: 'manifests'
-            targetPath: '$(Pipeline.Workspace)/Deployment/manifests'
+      steps:        
         - task: KubernetesManifest@0
           inputs:
             action: 'createSecret'
