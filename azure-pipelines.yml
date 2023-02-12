@@ -41,7 +41,7 @@ stages:
           latest
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Pipeline.Workspace)/Deployment/manifests'
+        targetPath: '$(Pipeline.Workspace)/manifests'
         artifact: 'manifests'
         publishLocation: 'pipeline'
 
