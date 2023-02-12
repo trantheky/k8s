@@ -75,5 +75,9 @@ stages:
             imagePullSecrets: '$(acrSecret)'
             containers: $(containerRegistry)/$(imageRepository):$(tag)
             manifests:
+              $(Pipeline.Workspace)/manifests/mongo-configmap.yaml
+              $(Pipeline.Workspace)/manifests/mongo-secret.yaml
+              $(Pipeline.Workspace)/manifests/mongo.yaml
+              $(Pipeline.Workspace)/manifests/shoppingapi-configmap.yaml
               $(Pipeline.Workspace)/manifests/shoppingapi.yaml             
             
