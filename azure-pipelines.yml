@@ -75,6 +75,5 @@ stages:
             imagePullSecrets: '$(acrSecret)'
             containers: $(containerRegistry)/$(imageRepository):$(tag)
             manifests:
-              $(Pipeline.Workspace)/Deployment/aks/deployment.yml
-              $(Pipeline.Workspace)/Deployment/aks/service.yml 
+              $(Pipeline.Workspace)/manifests/shoppingapi.yaml             
             
