@@ -35,13 +35,13 @@ stages:
         repository: '$(imageRepository)'
         command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath)'
-        buildContext: '$(Build.SourcesDirectory)/Shopping/'
+        buildContext: '$(Build.SourcesDirectory)/Shopping'
         tags: |
           $(tag)
           latest
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Pipeline.Workspace)/Deployment/aks'
+        targetPath: '$(Pipeline.Workspace)/Deployment/manifests'
         artifact: 'manifests'
         publishLocation: 'pipeline'
 
@@ -58,7 +58,7 @@ stages:
           inputs:
             buildType: 'current'
             artifactName: 'manifests'
-            targetPath: '$(Pipeline.Workspace)/Deployment/aks'
+            targetPath: '$(Pipeline.Workspace)/Deployment/manifests'
         - task: KubernetesManifest@0
           inputs:
             action: 'createSecret'
