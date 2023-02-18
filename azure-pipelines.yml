@@ -51,7 +51,7 @@ stages:
   jobs:
     - deployment: Deploy
       displayName: Deploy to AKS
-      environment: tranthekyk8s.default
+      environment: K8SEnvironment.default
       pool: 
         vmImage: $(vmImageName)
       strategy:
