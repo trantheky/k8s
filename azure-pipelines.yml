@@ -65,8 +65,7 @@ stages:
                   targetPath: '$(Pipeline.Workspace)/manifests'        
               - task: KubernetesManifest@0
                 inputs:
-                  action: 'deploy'   
-                  kubernetesServiceConnection: 'K8SKubernetes'               
+                  action: 'deploy'                                   
                   namespace: 'default'
                   imagePullSecrets: '$(imagePullSecret)'
                   containers: $(containerRegistry)/$(imageRepository):$(tag)
