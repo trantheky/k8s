@@ -51,7 +51,7 @@ stages:
   jobs:
     - deployment: Deploy
       displayName: Deploy to AKS
-      environment: K8SEnvironment.default
+      environment: K8SKubernetes.default
       pool: 
         vmImage: $(vmImageName)
       strategy:
