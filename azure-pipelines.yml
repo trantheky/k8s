@@ -49,25 +49,28 @@ stages:
   displayName: Deploy to Dev
   dependsOn: Build  
   jobs:
-    - job: Deploy
+    - deployment: Deploy
       displayName: Deploy to AKS
+      environment: tranthekyk8s.default
       pool: 
         vmImage: $(vmImageName)
-      steps:      
-        - task: DownloadPipelineArtifact@2
-          inputs:
-            buildType: 'current'
-            artifactName: 'manifests'
-            targetPath: '$(Pipeline.Workspace)/manifests'        
-        - task: KubernetesManifest@0
-          inputs:
-            action: 'deploy'
-            kubernetesServiceConnection: 'K8SKubernetes'
-            namespace: 'default'
-            imagePullSecrets: '$(imagePullSecret)'
-            containers: $(containerRegistry)/$(imageRepository):$(tag)
-            manifests: |         
-              $(Pipeline.Workspace)/manifests/mongo-configmap.yaml
-              $(Pipeline.Workspace)/manifests/mongo-secret.yaml
-              $(Pipeline.Workspace)/manifests/shoppingapi.yaml             
+      strategy:
+        runOnce:
+          deploy:            
+            steps:   
+              - task: DownloadPipelineArtifact@2
+                inputs:
+                  buildType: 'current'
+                  artifactName: 'manifests'
+                  targetPath: '$(Pipeline.Workspace)/manifests'        
+              - task: KubernetesManifest@0
+                inputs:
+                  action: 'deploy'                  
+                  namespace: 'default'
+                  imagePullSecrets: '$(imagePullSecret)'
+                  containers: $(containerRegistry)/$(imageRepository):$(tag)
+                  manifests: |         
+                    $(Pipeline.Workspace)/manifests/mongo-configmap.yaml
+                    $(Pipeline.Workspace)/manifests/mongo-secret.yaml
+                    $(Pipeline.Workspace)/manifests/shoppingapi.yaml             
             
