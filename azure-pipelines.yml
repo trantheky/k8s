@@ -15,7 +15,7 @@ variables:
   containerRegistry: 'batsacr.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Shopping/Shopping.Api/Dockerfile'
   tag: '$(Build.BuildId)'
-  imagePullSecret: 'bats-acr-pullimage-secret'
+  imagePullSecret: 'bat-acr-secret'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -58,15 +58,7 @@ stages:
           inputs:
             buildType: 'current'
             artifactName: 'manifests'
-            targetPath: '$(Pipeline.Workspace)/manifests'
-        - task: KubernetesManifest@0
-          inputs:
-            action: 'createSecret'
-            kubernetesServiceConnection: 'K8SKubernetes'
-            namespace: 'default'
-            secretType: 'dockerRegistry'
-            secretName: '$(imagePullSecret)'
-            dockerRegistryEndpoint: 'K8SAzureContainerRegistry'
+            targetPath: '$(Pipeline.Workspace)/manifests'        
         - task: KubernetesManifest@0
           inputs:
             action: 'deploy'
@@ -74,6 +66,8 @@ stages:
             namespace: 'default'
             imagePullSecrets: '$(imagePullSecret)'
             containers: $(containerRegistry)/$(imageRepository):$(tag)
-            manifests:              
+            manifests: |         
+              $(Pipeline.Workspace)/manifests/mongo-configmap.yaml
+              $(Pipeline.Workspace)/manifests/mongo-secret.yaml
               $(Pipeline.Workspace)/manifests/shoppingapi.yaml             
             
