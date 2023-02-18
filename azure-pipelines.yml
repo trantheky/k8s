@@ -48,9 +48,11 @@ stages:
 - stage: Deploy
   displayName: Deploy to Dev
   dependsOn: Build  
+
   jobs:
-    - job: Deploy
-      displayName: Deploy to AKS      
+    - deployment: Deploy
+      displayName: Deploy to AKS   
+      environment: 'K8SKubernetes.default'  
       pool: 
         vmImage: $(vmImageName)
       strategy:
@@ -64,9 +66,7 @@ stages:
                   targetPath: '$(Pipeline.Workspace)/manifests'        
               - task: KubernetesManifest@0
                 inputs:
-                  action: 'deploy'                                   
-                  namespace: 'default'
-                  kubernetesServiceConnection: 'K8SKubernetes'
+                  action: 'deploy'
                   imagePullSecrets: '$(imagePullSecret)'
                   containers: $(containerRegistry)/$(imageRepository):$(tag)
                   manifests: |         
