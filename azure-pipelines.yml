@@ -50,8 +50,7 @@ stages:
   dependsOn: Build  
   jobs:
     - deployment: Deploy
-      displayName: Deploy to AKS
-      environment: K8SKubernetes.default
+      displayName: Deploy to AKS      
       pool: 
         vmImage: $(vmImageName)
       strategy:
@@ -67,6 +66,7 @@ stages:
                 inputs:
                   action: 'deploy'                                   
                   namespace: 'default'
+                  kubernetesServiceConnection: 'K8SKubernetes'
                   imagePullSecrets: '$(imagePullSecret)'
                   containers: $(containerRegistry)/$(imageRepository):$(tag)
                   manifests: |         
